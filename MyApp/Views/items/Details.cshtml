@@ -1,0 +1,49 @@
+﻿@model MyApp.Models.Item
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container mt-4">
+    <h2>Item Details</h2>
+    <div class="card p-3 mt-3">
+        <dl class="row">
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Price</dt>
+            <dd class="col-sm-9">@Model.Price</dd>
+
+            <dt class="col-sm-3">Serial Numbers</dt>
+            <dd class="col-sm-9">
+                @if (Model.SerialNumbers != null && Model.SerialNumbers.Any())
+                {
+                    @string.Join(", ", Model.SerialNumbers.Select(sn => sn.Name))
+                }
+                else
+                {
+                    <span>No serial numbers</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Category</dt>
+            <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+            <dt class="col-sm-3">Clients</dt>
+            <dd class="col-sm-9">
+                @if (Model.ItemClients != null && Model.ItemClients.Any())
+                {
+                    @string.Join(", ", Model.ItemClients.Select(ic => ic.Client?.Name))
+                }
+                else
+                {
+                    <span>No clients associated</span>
+                }
+            </dd>
+        </dl>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+    </div>
+</div>
