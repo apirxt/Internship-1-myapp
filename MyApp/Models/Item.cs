@@ -9,7 +9,6 @@ namespace MyApp.Models;
 public partial class Item
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // ให้ SQL Server สร้าง Id
     public int Id { get; set; }
 
     public string Name { get; set; } = null!;

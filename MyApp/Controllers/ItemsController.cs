@@ -20,12 +20,14 @@ namespace MyApp.Controllers
         // GET: Items
         public async Task<IActionResult> Index()
         {
-            List<Item> items = await _context.Items
+            var items = await _context.Items
+            .Where(i => i.IsDeleted == false || i.IsDeleted == null)
             .Include(i => i.SerialNumbers)
             .Include(i => i.Category)
-            .Include(i => i.ItemClients) // ต้องใช้ ItemClients
-              .ThenInclude(ic => ic.Client)
+            .Include(i => i.ItemClients)
+                .ThenInclude(ic => ic.Client)
             .ToListAsync();
+
             return View(items);
         }
 
@@ -68,19 +70,21 @@ namespace MyApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(item);
-                await _context.SaveChangesAsync(); // item.Id ถูกสร้างที่นี่
+                await item.Create(_context); //  ปลอดภัยแล้ว
+                await _context.SaveChangesAsync(); //  Id จะถูกสร้างตรงนี้
+                // เพิ่ม SerialNumber
                 var SerialName = Request.Form["SerialName"];
                 if (!string.IsNullOrWhiteSpace(SerialName))
                 {
                     var serial = new SerialNumber
                     {
                         Name = SerialName,
-                        ItemId = item.Id // ต้องใส่ ItemId
+                        ItemId = item.Id // ใช้ Id ที่ EF กำหนด
                     };
                     _context.SerialNumbers.Add(serial);
                     await _context.SaveChangesAsync();
                 }
+                // เพิ่ม Client และความสัมพันธ์
                 var ClientName = Request.Form["ClientName"];
                 if (!string.IsNullOrWhiteSpace(ClientName))
                 {
@@ -134,6 +138,7 @@ namespace MyApp.Controllers
                 return NotFound();
             if (ModelState.IsValid)
             {
+                await item.Update(_context); // ใช้ Update() ของ ItemMetadata
                 var existingItem = await _context.Items
                     .Include(i => i.SerialNumbers)
                     .Include(i => i.ItemClients)
@@ -206,22 +211,14 @@ namespace MyApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _context.Items
-                .Include(i => i.SerialNumbers)
-                .Include(i => i.ItemClients)
-                .FirstOrDefaultAsync(i => i.Id == id);
+            var item = await _context.Items.FirstOrDefaultAsync(i => i.Id == id);
             if (item != null)
             {
-                _context.SerialNumbers.RemoveRange(item.SerialNumbers);
-                _context.ItemClients.RemoveRange(item.ItemClients);
-                _context.Items.Remove(item);
+                item.IsDeleted = true; // ทำ soft delete ตรงนี้
+                _context.Update(item);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
-        }
-        private bool ItemExists(int id)
-        {
-            return _context.Items.Any(e => e.Id == id);
         }
     }
 }

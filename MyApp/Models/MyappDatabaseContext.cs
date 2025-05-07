@@ -34,12 +34,12 @@ public partial class MyappDatabaseContext : DbContext
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_CategoryId");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Item>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK_Items_1");
+
             entity.HasOne(d => d.Category).WithMany(p => p.Items).HasConstraintName("FK_Items_CategoryId");
         });
 
@@ -47,7 +47,7 @@ public partial class MyappDatabaseContext : DbContext
         {
             entity.HasOne(d => d.Client).WithMany(p => p.ItemClients)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ItemClients_Clients");
+                .HasConstraintName("FK_ItemClients_Clients1");
 
             entity.HasOne(d => d.Item).WithMany(p => p.ItemClients)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -58,7 +58,7 @@ public partial class MyappDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK_SerialNumbers_1");
 
-            entity.HasOne(d => d.Item).WithMany(p => p.SerialNumbers).HasConstraintName("FK_SerialNumbers_Items1");
+            entity.HasOne(d => d.Item).WithMany(p => p.SerialNumbers).HasConstraintName("FK_SerialNumbers_SerialNumbers");
         });
 
         OnModelCreatingPartial(modelBuilder);
